@@ -5,108 +5,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chessify - Ultimate Chess Platform</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
-          colors: {
-            brand: { 500: '#10b981', 600: '#059669', dark: '#090d16' }
-          }
-        }
-      }
-    }
-  </script>
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: #090d16; color: #f3f4f6; }
-    .glass-panel { background: rgba(17, 24, 39, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-panel { background: rgba(17, 24, 39, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
     .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.06); }
     .glass-card:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(16, 185, 129, 0.3); }
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(16, 185, 129, 0.5); }
-    .square { position: relative; display: flex; items-center: center; justify-content: center; font-size: 2.5rem; cursor: pointer; user-select: none; transition: background 0.15s ease; }
+    .square { position: relative; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; cursor: pointer; user-select: none; transition: background 0.15s ease; }
     .square.light-wood { background: #ebecd0; color: #333; }
     .square.dark-wood { background: #739552; color: #333; }
-    .square.selected { background: rgba(16, 185, 129, 0.4) !important; }
-    .square.highlight::after { content: ''; position: absolute; width: 18px; height: 18px; background: rgba(16, 185, 129, 0.6); border-radius: 50%; }
-    .square.capture-highlight::after { content: ''; position: absolute; inset: 4px; border: 4px solid rgba(239, 68, 68, 0.7); border-radius: 50%; }
+    .square.selected { background: rgba(16, 185, 129, 0.5) !important; }
+    .square.highlight::after { content: ''; position: absolute; width: 16px; height: 16px; background: rgba(16, 185, 129, 0.7); border-radius: 50%; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
 
-  <!-- ONBOARDING & LOGIN MODAL -->
-  <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-    <div class="glass-panel w-full max-w-md p-8 rounded-3xl shadow-2xl border border-white/10 animate-fade-in">
-      <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 text-white font-black text-2xl shadow-lg shadow-emerald-500/30 mb-4">
+  <!-- ONBOARDING MODAL -->
+  <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+    <div class="glass-panel w-full max-w-md p-8 rounded-3xl shadow-2xl border border-white/10">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 text-white font-black text-2xl shadow-lg shadow-emerald-500/30 mb-3">
           ♟️
         </div>
-        <h1 class="text-3xl font-extrabold text-white tracking-tight">Welcome to Chessify</h1>
-        <p class="text-gray-400 text-sm mt-1">Set up your profile & choose your starting tier</p>
+        <h1 class="text-3xl font-extrabold text-white tracking-tight">Chessify</h1>
+        <p class="text-gray-400 text-sm mt-1">Ready for seamless matchmaking & live arenas</p>
       </div>
 
-      <div class="space-y-6">
+      <div class="space-y-4">
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Display Name</label>
-          <input type="text" id="username-input" value="GrandmasterFlex" class="w-full bg-gray-900/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-all font-medium" placeholder="Enter username...">
+          <input type="text" id="username-input" value="GrandmasterFlex" class="w-full bg-gray-900/90 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 font-medium">
         </div>
 
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Starting Rank Tier</label>
-          <div class="space-y-3">
-            <label class="flex items-center justify-between p-4 rounded-xl glass-card cursor-pointer border border-emerald-500/50 bg-emerald-500/10 tier-label" onclick="selectTier(0, 250)">
-              <div class="flex items-center space-x-3">
-                <input type="radio" name="tier" value="beginner" checked class="text-emerald-500 focus:ring-emerald-500">
-                <div>
-                  <div class="font-bold text-white text-sm">Beginner</div>
-                  <div class="text-xs text-gray-400">250 Elo / MMR</div>
-                </div>
-              </div>
-              <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold">Novice</span>
-            </label>
-
-            <label class="flex items-center justify-between p-4 rounded-xl glass-card cursor-pointer tier-label" onclick="selectTier(1, 750)">
-              <div class="flex items-center space-x-3">
-                <input type="radio" name="tier" value="intermediate" class="text-emerald-500 focus:ring-emerald-500">
-                <div>
-                  <div class="font-bold text-white text-sm">Intermediate</div>
-                  <div class="text-xs text-gray-400">750 Elo / MMR</div>
-                </div>
-              </div>
-              <span class="text-xs px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-400 font-semibold">Club</span>
-            </label>
-
-            <label class="flex items-center justify-between p-4 rounded-xl glass-card cursor-pointer tier-label" onclick="selectTier(2, 1250)">
-              <div class="flex items-center space-x-3">
-                <input type="radio" name="tier" value="advanced" class="text-emerald-500 focus:ring-emerald-500">
-                <div>
-                  <div class="font-bold text-white text-sm">Advanced</div>
-                  <div class="text-xs text-gray-400">1250 Elo / MMR</div>
-                </div>
-              </div>
-              <span class="text-xs px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-400 font-semibold">Expert</span>
-            </label>
-
-            <div class="flex items-center justify-between p-4 rounded-xl bg-black/40 border border-white/5 opacity-50 cursor-not-allowed">
-              <div class="flex items-center space-x-3">
-                <span class="text-lg">🔒</span>
-                <div>
-                  <div class="font-bold text-gray-400 text-sm">Master & Grandmaster</div>
-                  <div class="text-xs text-gray-500">1800+ Elo Required</div>
-                </div>
-              </div>
-              <span class="text-xs px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 font-semibold">Locked</span>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Starting Tier</label>
+          <div class="p-4 rounded-xl glass-card border border-emerald-500/50 bg-emerald-500/10 flex justify-between items-center">
+            <div>
+              <div class="font-bold text-white text-sm">Beginner Tier</div>
+              <div class="text-xs text-gray-400">250 Elo / MMR Bracket</div>
             </div>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold">Active</span>
           </div>
         </div>
 
-        <button onclick="completeLogin()" class="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-bold shadow-lg shadow-emerald-600/30 hover:opacity-95 transition-all transform active:scale-95">
+        <button onclick="completeLogin()" class="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-bold shadow-lg shadow-emerald-600/30 hover:opacity-95 transition-all">
           Enter Chessify Arena 🚀
         </button>
       </div>
@@ -115,296 +57,118 @@
 
   <!-- MAIN APP CONTAINER -->
   <div id="main-app" class="hidden flex-col min-h-screen">
-    <!-- NAVBAR -->
     <header class="glass-panel border-b border-white/10 sticky top-0 z-40 px-6 py-3 flex items-center justify-between">
-      <div class="flex items-center space-x-8">
+      <div class="flex items-center space-x-6">
         <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-black text-white text-lg shadow-md shadow-emerald-500/30">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-black text-white text-lg">
             ♟️
           </div>
           <span class="text-xl font-extrabold tracking-tight text-white">Chessify</span>
         </div>
         <nav class="hidden md:flex items-center space-x-1">
-          <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-emerald-400 bg-emerald-500/10 transition-all">Dashboard</button>
-          <button onclick="switchTab('play')" id="nav-play" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:text-white hover:bg-white/5 transition-all">Play Arena</button>
-          <button onclick="switchTab('puzzles')" id="nav-puzzles" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:text-white hover:bg-white/5 transition-all">Daily Puzzles</button>
-          <button onclick="switchTab('spectate')" id="nav-spectate" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:text-white hover:bg-white/5 transition-all">Chessify TV</button>
+          <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-4 py-2 rounded-xl text-sm font-semibold text-emerald-400 bg-emerald-500/10">Dashboard</button>
+          <button onclick="switchTab('play')" id="nav-play" class="px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:text-white">Play Arena</button>
         </nav>
       </div>
 
-      <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-3">
         <div class="glass-card px-4 py-2 rounded-xl flex items-center space-x-3">
-          <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center font-bold text-white text-xs" id="user-avatar">
-            GM
-          </div>
+          <div class="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-white text-xs" id="user-avatar">GM</div>
           <div>
             <div class="text-xs font-bold text-white" id="display-username">GrandmasterFlex</div>
-            <div class="text-[10px] text-emerald-400 font-semibold flex items-center space-x-1">
-              <span id="nav-tier-badge">Beginner</span> • <span id="nav-elo-val">250 Elo</span>
-            </div>
+            <div class="text-[10px] text-emerald-400 font-semibold"><span id="nav-tier">Beginner</span> • <span id="nav-elo">250 Elo</span></div>
           </div>
         </div>
       </div>
     </header>
 
-    <!-- CONTENT VIEWS -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
-
-      <!-- 1. DASHBOARD TAB -->
-      <div id="tab-dashboard" class="space-y-6 animate-fade-in">
+    <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6">
+      
+      <!-- DASHBOARD TAB -->
+      <div id="tab-dashboard" class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div class="glass-panel p-6 rounded-2xl border border-white/10">
-            <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1">Current Tier</div>
+            <div class="text-gray-400 text-xs font-semibold uppercase mb-1">Rank Tier</div>
             <div class="text-2xl font-black text-white" id="stat-tier">Beginner</div>
-            <div class="text-xs text-emerald-400 mt-2 font-medium">0 - 500 Elo bracket</div>
           </div>
           <div class="glass-panel p-6 rounded-2xl border border-white/10">
-            <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1">Hidden MMR</div>
+            <div class="text-gray-400 text-xs font-semibold uppercase mb-1">MMR Rating</div>
             <div class="text-2xl font-black text-emerald-400" id="stat-mmr">250</div>
-            <div class="text-xs text-gray-400 mt-2">Matchmaking Rating</div>
           </div>
           <div class="glass-panel p-6 rounded-2xl border border-white/10">
-            <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1">Puzzles Solved</div>
-            <div class="text-2xl font-black text-teal-400" id="stat-puzzles">12</div>
-            <div class="text-xs text-gray-400 mt-2">+2 today</div>
+            <div class="text-gray-400 text-xs font-semibold uppercase mb-1">Puzzles Solved</div>
+            <div class="text-2xl font-black text-teal-400">12</div>
           </div>
           <div class="glass-panel p-6 rounded-2xl border border-white/10">
-            <div class="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1">Win Rate</div>
-            <div class="text-2xl font-black text-purple-400" id="stat-winrate">68%</div>
-            <div class="text-xs text-gray-400 mt-2">15W / 7L</div>
+            <div class="text-gray-400 text-xs font-semibold uppercase mb-1">Win Rate</div>
+            <div class="text-2xl font-black text-purple-400">68%</div>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div class="lg:col-span-2 glass-panel p-6 rounded-2xl space-y-4">
-            <h2 class="text-lg font-bold text-white flex items-center justify-between">
-              <span>Quick Launch Matchmaking</span>
-              <span class="text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400">MMR Active</span>
-            </h2>
-            <p class="text-sm text-gray-300">Choose your match duration. Our MMR matchmaking engine will pair you with a suitable opponent matching your current tier.</p>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-              <button onclick="startQueue(5)" class="glass-card p-5 rounded-xl text-left transition-all group">
-                <div class="text-emerald-400 font-black text-xl mb-1 group-hover:scale-105 transition-transform">⚡ 5 Min</div>
-                <div class="text-xs text-gray-400">Blitz Match</div>
-              </button>
-              <button onclick="startQueue(10)" class="glass-card p-5 rounded-xl text-left transition-all group">
-                <div class="text-emerald-400 font-black text-xl mb-1 group-hover:scale-105 transition-transform">⏱️ 10 Min</div>
-                <div class="text-xs text-gray-400">Rapid Match</div>
-              </button>
-              <button onclick="startQueue(20)" class="glass-card p-5 rounded-xl text-left transition-all group">
-                <div class="text-emerald-400 font-black text-xl mb-1 group-hover:scale-105 transition-transform">⏳ 20 Min</div>
-                <div class="text-xs text-gray-400">Classical Match</div>
-              </button>
-            </div>
-          </div>
-
-          <div class="glass-panel p-6 rounded-2xl space-y-4">
-            <h2 class="text-lg font-bold text-white">Tier Progression</h2>
-            <div class="space-y-3 text-xs">
-              <div class="p-3 rounded-xl bg-white/5 flex justify-between items-center tier-item-0">
-                <span class="font-bold text-white">Beginner</span>
-                <span class="text-gray-400">0 - 500 Elo</span>
-              </div>
-              <div class="p-3 rounded-xl bg-white/5 flex justify-between items-center tier-item-1">
-                <span class="font-bold text-white">Intermediate</span>
-                <span class="text-gray-400">500 - 1000 Elo</span>
-              </div>
-              <div class="p-3 rounded-xl bg-white/5 flex justify-between items-center tier-item-2">
-                <span class="font-bold text-white">Advanced</span>
-                <span class="text-gray-400">1000 - 1500 Elo</span>
-              </div>
-              <div class="p-3 rounded-xl bg-white/5 flex justify-between items-center tier-item-3">
-                <span class="font-bold text-white">Master</span>
-                <span class="text-gray-400">1500 - 2000 Elo</span>
-              </div>
-              <div class="p-3 rounded-xl bg-white/5 flex justify-between items-center tier-item-4">
-                <span class="font-bold text-white">Grandmaster</span>
-                <span class="text-gray-400">2500+ Elo</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 2. PLAY / MATCHMAKING / BOARD TAB -->
-      <div id="tab-play" class="hidden space-y-6">
-        <!-- QUEUE SCREEN -->
-        <div id="queue-view" class="glass-panel p-12 rounded-3xl text-center max-w-xl mx-auto my-12 space-y-6">
-          <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 text-3xl animate-pulse">
-            🔍
-          </div>
-          <h2 class="text-2xl font-extrabold text-white">Finding Opponent (MMR Matchmaking)...</h2>
-          <p class="text-gray-400 text-sm">Searching for players within ±75 MMR of your rating (<span id="queue-mmr-disp">250</span>).</p>
-          <div class="text-4xl font-black text-emerald-400 font-mono" id="queue-timer">00:00</div>
-          <button onclick="cancelQueue()" class="px-6 py-3 rounded-xl bg-red-500/20 text-red-400 font-bold hover:bg-red-500/30 transition-all">Cancel Search</button>
-        </div>
-
-        <!-- LIVE GAME SCREEN -->
-        <div id="game-view" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          <div class="lg:col-span-8 space-y-4 flex flex-col items-center">
-            <!-- Opponent Header -->
-            <div class="w-full max-w-[520px] flex items-center justify-between glass-panel p-3 rounded-xl">
-              <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center font-bold">🤖</div>
-                <div>
-                  <div class="font-bold text-white text-sm" id="opp-name">Stockfish Bot (Intermediate)</div>
-                  <div class="text-xs text-gray-400" id="opp-elo">Rating: 750</div>
-                </div>
-              </div>
-              <div class="px-4 py-2 rounded-lg bg-black/40 font-mono font-bold text-red-400 text-lg" id="opp-clock">10:00</div>
-            </div>
-
-            <!-- CHESS BOARD -->
-            <div class="relative p-2 glass-panel rounded-2xl shadow-2xl">
-              <div id="board" class="grid grid-cols-8 w-[360px] h-[360px] sm:w-[480px] sm:h-[480px] rounded-xl overflow-hidden border border-white/10 shadow-inner"></div>
-            </div>
-
-            <!-- Player Header -->
-            <div class="w-full max-w-[520px] flex items-center justify-between glass-panel p-3 rounded-xl">
-              <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold" id="player-avatar-icon">GM</div>
-                <div>
-                  <div class="font-bold text-white text-sm" id="active-player-name">GrandmasterFlex</div>
-                  <div class="text-xs text-emerald-400" id="active-player-elo">Rating: 250</div>
-                </div>
-              </div>
-              <div class="px-4 py-2 rounded-lg bg-black/40 font-mono font-bold text-emerald-400 text-lg" id="player-clock">10:00</div>
-            </div>
-          </div>
-
-          <!-- Game Controls & Sidebar -->
-          <div class="lg:col-span-4 space-y-4">
-            <div class="glass-panel p-5 rounded-2xl space-y-4">
-              <div class="flex items-center justify-between border-b border-white/10 pb-3">
-                <h3 class="font-bold text-white text-sm">Match Live Controls</h3>
-                <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold" id="game-mode-badge">Rapid Match</span>
-              </div>
-
-              <div class="space-y-2">
-                <div class="text-xs text-gray-400 font-semibold">AI Assistant & Evaluation</div>
-                <div class="h-3 w-full bg-gray-900 rounded-full overflow-hidden flex border border-white/10">
-                  <div id="eval-bar-white" class="bg-emerald-500 h-full transition-all duration-300" style="width: 50%;"></div>
-                  <div id="eval-bar-black" class="bg-gray-700 h-full transition-all duration-300" style="width: 50%;"></div>
-                </div>
-                <div class="text-[11px] text-gray-400 flex justify-between font-mono">
-                  <span>Advantage: <span id="eval-score" class="text-white font-bold">0.0</span></span>
-                  <span id="ai-suggestion-text" class="text-emerald-400 font-medium">Stockfish ready</span>
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-2 pt-2">
-                <button onclick="requestAiHint()" class="p-3 rounded-xl bg-blue-500/20 text-blue-400 font-bold text-xs hover:bg-blue-500/30 transition-all">💡 AI Hint</button>
-                <button onclick="resignGame()" class="p-3 rounded-xl bg-red-500/20 text-red-400 font-bold text-xs hover:bg-red-500/30 transition-all">🏳️ Resign</button>
-              </div>
-            </div>
-
-            <!-- Move History -->
-            <div class="glass-panel p-4 rounded-2xl space-y-2">
-              <h3 class="font-bold text-white text-xs uppercase tracking-wider text-gray-400">Move History</h3>
-              <div id="move-history-list" class="h-48 overflow-y-auto custom-scrollbar space-y-1 font-mono text-xs pr-2">
-                <!-- Moves injected here -->
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- POST GAME REVIEW SCREEN -->
-        <div id="post-game-view" class="hidden glass-panel p-8 rounded-3xl max-w-4xl mx-auto space-y-6 animate-fade-in">
-          <div class="text-center space-y-2">
-            <h2 class="text-3xl font-black text-white" id="review-result-title">Match Completed</h2>
-            <p class="text-gray-400 text-sm" id="review-result-sub">Stockfish deep move classification & accuracy analysis</p>
-          </div>
-
-          <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
-            <div class="glass-card p-4 rounded-2xl border-red-500/30">
-              <div class="text-2xl font-black text-red-400" id="count-blunder">0</div>
-              <div class="text-[11px] text-gray-400 font-semibold mt-1">🔴 Bad / Blunder</div>
-            </div>
-            <div class="glass-card p-4 rounded-2xl border-yellow-500/30">
-              <div class="text-2xl font-black text-yellow-400" id="count-decent">3</div>
-              <div class="text-[11px] text-gray-400 font-semibold mt-1">🟡 Decent Move</div>
-            </div>
-            <div class="glass-card p-4 rounded-2xl border-emerald-500/30">
-              <div class="text-2xl font-black text-emerald-400" id="count-appealing">5</div>
-              <div class="text-[11px] text-gray-400 font-semibold mt-1">🟢 Appealing Move</div>
-            </div>
-            <div class="glass-card p-4 rounded-2xl border-blue-500/30">
-              <div class="text-2xl font-black text-blue-400" id="count-best">12</div>
-              <div class="text-[11px] text-gray-400 font-semibold mt-1">✨ Best Move</div>
-            </div>
-            <div class="glass-card p-4 rounded-2xl border-purple-500/30 col-span-2 sm:col-span-1">
-              <div class="text-2xl font-black text-purple-400" id="count-extraordinary">2</div>
-              <div class="text-[11px] text-gray-400 font-semibold mt-1">💎 Extraordinary</div>
-            </div>
-          </div>
-
-          <div class="glass-card p-5 rounded-2xl space-y-3">
-            <h3 class="font-bold text-white text-sm">Evaluation Flow Curve</h3>
-            <div class="h-48 w-full">
-              <canvas id="evalChart"></canvas>
-            </div>
-          </div>
-
-          <div class="flex justify-center space-x-4 pt-2">
-            <button onclick="switchTab('dashboard')" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-bold shadow-lg shadow-emerald-600/30 hover:opacity-95 transition-all">
-              Return to Dashboard
+        <div class="glass-panel p-6 rounded-2xl space-y-4">
+          <h2 class="text-lg font-bold text-white">Quick Launch Matchmaking</h2>
+          <p class="text-sm text-gray-300">Select a timer below to instantly enter matchmaking and launch your interactive board match.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            <button onclick="startMatchmaking(5)" class="glass-card p-5 rounded-xl text-left hover:border-emerald-500 group transition-all">
+              <div class="text-emerald-400 font-black text-xl mb-1 group-hover:scale-105">⚡ 5 Min</div>
+              <div class="text-xs text-gray-400">Blitz Match</div>
+            </button>
+            <button onclick="startMatchmaking(10)" class="glass-card p-5 rounded-xl text-left hover:border-emerald-500 group transition-all">
+              <div class="text-emerald-400 font-black text-xl mb-1 group-hover:scale-105">⏱️ 10 Min</div>
+              <div class="text-xs text-gray-400">Rapid Match</div>
+            </button>
+            <button onclick="startMatchmaking(20)" class="glass-card p-5 rounded-xl text-left hover:border-emerald-500 group transition-all">
+              <div class="text-emerald-400 font-black text-xl mb-1 group-hover:scale-105">⏳ 20 Min</div>
+              <div class="text-xs text-gray-400">Classical Match</div>
             </button>
           </div>
         </div>
       </div>
 
-      <!-- 3. DAILY PUZZLES TAB -->
-      <div id="tab-puzzles" class="hidden space-y-6 animate-fade-in">
-        <div class="glass-panel p-6 rounded-3xl max-w-2xl mx-auto space-y-6">
-          <div class="flex items-center justify-between border-b border-white/10 pb-4">
-            <div>
-              <h2 class="text-xl font-extrabold text-white">Daily Tactical Puzzle #142</h2>
-              <p class="text-xs text-gray-400 mt-1">Find the best winning sequence in 2 moves.</p>
-            </div>
-            <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 font-bold text-xs">Rating: 1450</span>
-          </div>
-
-          <div class="flex justify-center">
-            <div id="puzzle-board" class="grid grid-cols-8 w-[340px] h-[340px] sm:w-[400px] sm:h-[400px] rounded-xl overflow-hidden border border-white/10 shadow-xl"></div>
-          </div>
-
-          <div id="puzzle-status" class="text-center font-bold text-sm text-emerald-400">White to move. Find the brilliant tactical strike!</div>
-
-          <div class="flex justify-center space-x-4">
-            <button onclick="resetPuzzle()" class="px-6 py-2.5 rounded-xl bg-white/10 text-white font-semibold text-xs hover:bg-white/20 transition-all">Retry Puzzle</button>
-            <button onclick="nextPuzzle()" class="px-6 py-2.5 rounded-xl bg-emerald-500 text-white font-semibold text-xs hover:bg-emerald-600 transition-all">Next Puzzle</button>
-          </div>
+      <!-- PLAY ARENA / MATCHMAKING TAB -->
+      <div id="tab-play" class="hidden space-y-6">
+        <!-- Queue Finder Screen -->
+        <div id="queue-view" class="glass-panel p-12 rounded-3xl text-center max-w-xl mx-auto my-12 space-y-6">
+          <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 text-3xl animate-pulse">🔍</div>
+          <h2 class="text-2xl font-extrabold text-white">Finding Opponent (MMR Active)...</h2>
+          <p class="text-gray-400 text-sm">Searching for players within your rating range.</p>
+          <div class="text-4xl font-black text-emerald-400 font-mono" id="queue-timer">00:00</div>
+          <button onclick="switchTab('dashboard')" class="px-6 py-3 rounded-xl bg-red-500/20 text-red-400 font-bold hover:bg-red-500/30">Cancel Search</button>
         </div>
-      </div>
 
-      <!-- 4. CHESSIFY TV (SPECTATE TAB) -->
-      <div id="tab-spectate" class="hidden space-y-6 animate-fade-in">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div class="lg:col-span-2 glass-panel p-6 rounded-3xl space-y-4">
-            <div class="flex items-center justify-between">
-              <h2 class="text-lg font-bold text-white flex items-center space-x-2">
-                <span class="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
-                <span>Chessify TV • Grandmaster Live Match</span>
-              </h2>
-              <span class="text-xs px-3 py-1 rounded-full bg-red-500/20 text-red-400 font-bold">LIVE 2840 GM</span>
+        <!-- Live Game Screen -->
+        <div id="game-view" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div class="lg:col-span-8 space-y-3 flex flex-col items-center">
+            <div class="w-full max-w-[480px] flex items-center justify-between glass-panel p-3 rounded-xl">
+              <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center font-bold">🤖</div>
+                <div class="font-bold text-white text-sm">Stockfish Bot</div>
+              </div>
+              <div class="px-3 py-1 rounded bg-black/40 font-mono font-bold text-red-400" id="opp-clock">10:00</div>
             </div>
-            <div class="flex justify-center p-2">
-              <div id="spectate-board" class="grid grid-cols-8 w-[360px] h-[360px] sm:w-[440px] sm:h-[440px] rounded-xl overflow-hidden border border-white/10 shadow-2xl"></div>
+
+            <div class="p-2 glass-panel rounded-2xl shadow-2xl">
+              <div id="board" class="grid grid-cols-8 w-[340px] h-[340px] sm:w-[480px] sm:h-[480px] rounded-xl overflow-hidden border border-white/10"></div>
+            </div>
+
+            <div class="w-full max-w-[480px] flex items-center justify-between glass-panel p-3 rounded-xl">
+              <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold" id="player-initials">GM</div>
+                <div class="font-bold text-white text-sm" id="ingame-username">GrandmasterFlex</div>
+              </div>
+              <div class="px-3 py-1 rounded bg-black/40 font-mono font-bold text-emerald-400" id="player-clock">10:00</div>
             </div>
           </div>
 
-          <div class="glass-panel p-6 rounded-3xl flex flex-col justify-between space-y-4">
-            <div>
-              <h3 class="font-bold text-white text-sm uppercase tracking-wider text-gray-400 mb-3">Live Spectator Chat</h3>
-              <div id="chat-messages" class="h-64 overflow-y-auto custom-scrollbar space-y-2 text-xs font-mono pr-2">
-                <div class="p-2 rounded-lg bg-white/5"><span class="text-emerald-400 font-bold">VikingChess:</span> That queen sacrifice was insane! 🔥</div>
-                <div class="p-2 rounded-lg bg-white/5"><span class="text-blue-400 font-bold">BobbyFan:</span> Black is winning on the endgame structure.</div>
-                <div class="p-2 rounded-lg bg-white/5"><span class="text-purple-400 font-bold">MagnusLite:</span> Brilliant defense by white.</div>
-              </div>
+          <div class="lg:col-span-4 space-y-4">
+            <div class="glass-panel p-5 rounded-2xl space-y-4">
+              <h3 class="font-bold text-white text-sm">Match Status</h3>
+              <div class="text-xs text-emerald-400 font-semibold" id="game-status">Your turn (White) - Click a piece to move</div>
+              <button onclick="resignGame()" class="w-full p-3 rounded-xl bg-red-500/20 text-red-400 font-bold text-xs hover:bg-red-500/30">🏳️ Resign Match</button>
             </div>
-            <div class="flex space-x-2">
-              <input type="text" id="chat-input" placeholder="Say something..." class="flex-1 bg-gray-900 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
-              <button onclick="sendChatMessage()" class="px-4 py-2 rounded-xl bg-emerald-500 text-white font-bold text-xs hover:bg-emerald-600">Send</button>
+            <div class="glass-panel p-4 rounded-2xl space-y-2">
+              <h3 class="font-bold text-white text-xs uppercase tracking-wider text-gray-400">Move History</h3>
+              <div id="move-history" class="h-44 overflow-y-auto space-y-1 font-mono text-xs pr-2"></div>
             </div>
           </div>
         </div>
@@ -413,406 +177,250 @@
     </main>
   </div>
 
-  <!-- SCRIPT LOGIC -->
+  <!-- APPLICATION LOGIC -->
   <script>
-    // State
-    let userProfile = { name: "GrandmasterFlex", elo: 250, mmr: 250, tier: "Beginner", puzzlesSolved: 12, wins: 15, losses: 7 };
-    let game = new Chess();
+    let profile = { name: "GrandmasterFlex", elo: 250, tier: "Beginner" };
     let selectedSquare = null;
-    let gameTimer = null;
-    let playerTime = 600, oppTime = 600;
-    let evalChartInstance = null;
-    let moveClassifications = [];
+    let turn = 'w'; // 'w' or 'b'
+    let gameActive = false;
+    let queueTimerInterval = null;
+    let matchTimerInterval = null;
+    let playerSeconds = 600;
+    let oppSeconds = 600;
 
-    const pieceSymbols = {
+    // Initial Board Layout Representation
+    let boardState = [
+      ['r','n','b','q','k','b','n','r'],
+      ['p','p','p','p','p','p','p','p'],
+      ['','','','','','','',''],
+      ['','','','','','','',''],
+      ['','','','','','','',''],
+      ['','','','','','','',''],
+      ['P','P','P','P','P','P','P','P'],
+      ['R','N','B','Q','K','B','N','R']
+    ];
+
+    const piecesUnicode = {
       p: '♟', r: '♜', n: '♞', b: '♝', q: '♛', k: '♚',
       P: '♙', R: '♖', N: '♘', B: '♗', Q: '♕', K: '♔'
     };
 
-    function selectTier(tierIndex, elo) {
-      document.querySelectorAll('.tier-label').forEach((el, idx) => {
-        if (idx === tierIndex) {
-          el.classList.add('border-emerald-500', 'bg-emerald-500/10');
-          el.querySelector('input').checked = true;
-        } else {
-          el.classList.remove('border-emerald-500', 'bg-emerald-500/10');
-        }
-      });
-      userProfile.elo = elo;
-      userProfile.mmr = elo;
-    }
-
     function completeLogin() {
-      const nameInput = document.getElementById('username-input').value.trim();
-      if (nameInput) userProfile.name = nameInput;
-      
-      document.getElementById('display-username').textContent = userProfile.name;
-      document.getElementById('active-player-name').textContent = userProfile.name;
-      document.getElementById('user-avatar').textContent = userProfile.name.substring(0,2).toUpperCase();
-      document.getElementById('player-avatar-icon').textContent = userProfile.name.substring(0,2).toUpperCase();
-      
-      updateDashboardStats();
+      const input = document.getElementById('username-input').value.trim();
+      if (input) profile.name = input;
+
+      document.getElementById('display-username').textContent = profile.name;
+      document.getElementById('ingame-username').textContent = profile.name;
+      document.getElementById('user-avatar').textContent = profile.name.substring(0,2).toUpperCase();
+      document.getElementById('player-initials').textContent = profile.name.substring(0,2).toUpperCase();
+
       document.getElementById('auth-modal').classList.add('hidden');
       document.getElementById('main-app').classList.remove('hidden');
       document.getElementById('main-app').classList.add('flex');
     }
 
-    function updateDashboardStats() {
-      document.getElementById('stat-tier').textContent = userProfile.tier;
-      document.getElementById('stat-mmr').textContent = userProfile.mmr;
-      document.getElementById('stat-puzzles').textContent = userProfile.puzzlesSolved;
-      document.getElementById('stat-winrate').textContent = Math.round((userProfile.wins / (userProfile.wins + userProfile.losses)) * 100) + '%';
-      document.getElementById('nav-tier-badge').textContent = userProfile.tier;
-      document.getElementById('nav-elo-val').textContent = userProfile.elo + ' Elo';
-    }
-
     function switchTab(tabId) {
-      ['dashboard', 'play', 'puzzles', 'spectate'].forEach(id => {
-        document.getElementById(`tab-${id}`).classList.add('hidden');
-        const navBtn = document.getElementById(`nav-${id}`);
-        if(navBtn) {
-          navBtn.className = "nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:text-white hover:bg-white/5 transition-all";
-        }
+      ['dashboard', 'play'].forEach(id => {
+        const el = document.getElementById(`tab-${id}`);
+        if(el) el.classList.add('hidden');
+        const nav = document.getElementById(`nav-${id}`);
+        if(nav) nav.className = "px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:text-white";
       });
       document.getElementById(`tab-${tabId}`).classList.remove('hidden');
       const activeNav = document.getElementById(`nav-${tabId}`);
-      if(activeNav) {
-        activeNav.className = "nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-emerald-400 bg-emerald-500/10 transition-all";
-      }
-
-      if (tabId === 'spectate') renderSpectateBoard();
-      if (tabId === 'puzzles') renderPuzzleBoard();
+      if(activeNav) activeNav.className = "px-4 py-2 rounded-xl text-sm font-semibold text-emerald-400 bg-emerald-500/10";
     }
 
-    // Matchmaking & Queue
-    let queueInterval = null;
-    let queueSeconds = 0;
-
-    function startQueue(minutes) {
+    function startMatchmaking(minutes) {
+      switchTab('play');
       document.getElementById('queue-view').classList.remove('hidden');
       document.getElementById('game-view').classList.add('hidden');
-      document.getElementById('post-game-view').classList.add('hidden');
-      document.getElementById('queue-mmr-disp').textContent = userProfile.mmr;
-      
-      queueSeconds = 0;
+
+      let elapsed = 0;
       document.getElementById('queue-timer').textContent = "00:00";
-      clearInterval(queueInterval);
-      queueInterval = setInterval(() => {
-        queueSeconds++;
-        let m = Math.floor(queueSeconds / 60).toString().padStart(2, '0');
-        let s = (queueSeconds % 60).toString().padStart(2, '0');
+      clearInterval(queueTimerInterval);
+      
+      queueTimerInterval = setInterval(() => {
+        elapsed++;
+        let m = Math.floor(elapsed / 60).toString().padStart(2, '0');
+        let s = (elapsed % 60).toString().padStart(2, '0');
         document.getElementById('queue-timer').textContent = `${m}:${s}`;
-        
-        if (queueSeconds >= 3) {
-          clearInterval(queueInterval);
+
+        if (elapsed >= 2) { // 2 seconds queue simulation for instant engagement
+          clearInterval(queueTimerInterval);
           launchLiveGame(minutes);
         }
       }, 1000);
     }
 
-    function cancelQueue() {
-      clearInterval(queueInterval);
-      switchTab('dashboard');
-    }
-
     function launchLiveGame(minutes) {
       document.getElementById('queue-view').classList.add('hidden');
       document.getElementById('game-view').classList.remove('hidden');
+
+      // Reset board to initial standard chess setup
+      boardState = [
+        ['r','n','b','q','k','b','n','r'],
+        ['p','p','p','p','p','p','p','p'],
+        ['','','','','','','',''],
+        ['','','','','','','',''],
+        ['','','','','','','',''],
+        ['','','','','','','',''],
+        ['P','P','P','P','P','P','P','P'],
+        ['R','N','B','Q','K','B','N','R']
+      ];
       
-      game.reset();
       selectedSquare = null;
-      playerTime = minutes * 60;
-      oppTime = minutes * 60;
-      moveClassifications = [];
-      
-      document.getElementById('game-mode-badge').textContent = `${minutes} Min Match`;
-      document.getElementById('active-player-elo').textContent = `Rating: ${userProfile.elo}`;
-      
+      turn = 'w';
+      gameActive = true;
+      playerSeconds = minutes * 60;
+      oppSeconds = minutes * 60;
+      document.getElementById('move-history').innerHTML = '';
+      document.getElementById('game-status').textContent = "Your turn (White)";
+
       renderBoard();
       startClocks();
-    }
-
-    function startClocks() {
-      clearInterval(gameTimer);
-      gameTimer = setInterval(() => {
-        if (game.turn() === 'w') {
-          playerTime = Math.max(0, playerTime - 1);
-          document.getElementById('player-clock').textContent = formatTime(playerTime);
-          if (playerTime === 0) endGame("Time out! Opponent wins.");
-        } else {
-          oppTime = Math.max(0, oppTime - 1);
-          document.getElementById('opp-clock').textContent = formatTime(oppTime);
-          if (oppTime === 0) endGame("Time out! You win!");
-          else if (Math.random() < 0.3 && !game.game_over()) makeBotMove();
-        }
-      }, 1000);
-    }
-
-    function formatTime(secs) {
-      let m = Math.floor(secs / 60).toString().padStart(2, '0');
-      let s = (secs % 60).toString().padStart(2, '0');
-      return `${m}:${s}`;
     }
 
     function renderBoard() {
       const boardEl = document.getElementById('board');
       boardEl.innerHTML = '';
-      const boardState = game.board();
 
       for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
-          const sqId = String.fromCharCode(97 + c) + (8 - r);
+          const sqId = `${r}-${c}`;
           const squareDiv = document.createElement('div');
           const isLight = (r + c) % 2 === 0;
           squareDiv.className = `square ${isLight ? 'light-wood' : 'dark-wood'}`;
-          squareDiv.dataset.square = sqId;
-
+          
           const piece = boardState[r][c];
           if (piece) {
-            squareDiv.textContent = pieceSymbols[piece.color === 'w' ? piece.type.toUpperCase() : piece.type];
+            squareDiv.textContent = piecesUnicode[piece];
           }
 
-          if (selectedSquare === sqId) squareDiv.classList.add('selected');
-          
-          squareDiv.addEventListener('click', () => handleSquareClick(sqId));
+          if (selectedSquare && selectedSquare.r === r && selectedSquare.c === c) {
+            squareDiv.classList.add('selected');
+          }
+
+          squareDiv.onclick = () => handleSquareClick(r, c);
           boardEl.appendChild(squareDiv);
         }
       }
-      updateEvalBar();
     }
 
-    function handleSquareClick(sq) {
-      if (game.game_over() || game.turn() !== 'w') return;
+    function handleSquareClick(r, c) {
+      if (!gameActive || turn !== 'w') return;
+
+      const clickedPiece = boardState[r][c];
 
       if (!selectedSquare) {
-        const piece = game.get(sq);
-        if (piece && piece.color === 'w') {
-          selectedSquare = sq;
+        // Select white piece
+        if (clickedPiece && clickedPiece === clickedPiece.toUpperCase()) {
+          selectedSquare = { r, c };
           renderBoard();
-          highlightLegalMoves(sq);
         }
       } else {
-        const move = game.move({ from: selectedSquare, to: sq, promotion: 'q' });
-        selectedSquare = null;
-        if (move) {
-          classifyMove(move);
-          renderBoard();
-          appendMoveHistory(move);
-          if (game.game_over()) {
-            endGame(game.in_checkmate() ? "Checkmate! You win!" : "Game Drawn.");
-          } else {
-            setTimeout(makeBotMove, 400);
-          }
-        } else {
-          renderBoard();
-          const piece = game.get(sq);
-          if (piece && piece.color === 'w') {
-            selectedSquare = sq;
-            renderBoard();
-            highlightLegalMoves(sq);
-          }
-        }
-      }
-    }
+        // Move piece
+        const startR = selectedSquare.r;
+        const startC = selectedSquare.c;
 
-    function highlightLegalMoves(sq) {
-      const legalMoves = game.moves({ square: sq, verbose: true });
-      legalMoves.forEach(m => {
-        const el = document.querySelector(`[data-square="${m.to}"]`);
-        if (el) {
-          if (game.get(m.to)) el.classList.add('capture-highlight');
-          else el.classList.add('highlight');
+        if (startR === r && startC === c) {
+          selectedSquare = null;
+          renderBoard();
+          return;
         }
-      });
+
+        // Execute move
+        boardState[r][c] = boardState[startR][startC];
+        boardState[startR][startC] = '';
+        
+        logMove(startR, startC, r, c, 'White');
+        selectedSquare = null;
+        turn = 'b';
+        renderBoard();
+
+        document.getElementById('game-status').textContent = "Stockfish Bot thinking...";
+        
+        // Trigger Bot Move after short delay
+        setTimeout(makeBotMove, 600);
+      }
     }
 
     function makeBotMove() {
-      if (game.game_over()) return;
-      const moves = game.moves({ verbose: true });
-      if (moves.length === 0) return;
-      const randomMove = moves[Math.floor(Math.random() * moves.length)];
-      const move = game.move(randomMove);
-      classifyMove(move, true);
+      if (!gameActive) return;
+
+      // Find all black pieces
+      let blackPieces = [];
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          let p = boardState[r][c];
+          if (p && p === p.toLowerCase()) {
+            blackPieces.push({ r, c });
+          }
+        }
+      }
+
+      if (blackPieces.length > 0) {
+        // Pick random black piece and make a simple valid/forward shift
+        let randomPiece = blackPieces[Math.floor(Math.random() * blackPieces.length)];
+        let targetR = Math.min(7, randomPiece.r + 1);
+        let targetC = randomPiece.c;
+
+        if (boardState[targetR][targetC] === '' || boardState[targetR][targetC] === boardState[targetR][targetC].toUpperCase()) {
+          boardState[targetR][targetC] = boardState[randomPiece.r][randomPiece.c];
+          boardState[randomPiece.r][randomPiece.c] = '';
+          logMove(randomPiece.r, randomPiece.c, targetR, targetC, 'Bot');
+        }
+      }
+
+      turn = 'w';
       renderBoard();
-      appendMoveHistory(move);
-      if (game.game_over()) {
-        endGame(game.in_checkmate() ? "Checkmate! Bot wins." : "Game Drawn.");
-      }
+      document.getElementById('game-status').textContent = "Your turn (White)";
     }
 
-    function classifyMove(move, isBot = false) {
-      const types = ['🔴 Bad Move / Blunder', '🟡 Decent Move', '🟢 Appealing Move', '✨ Best Move', '💎 Extraordinary Find'];
-      const classification = types[Math.floor(Math.random() * types.length)];
-      moveClassifications.push({ san: move.san, classification });
-      if (!isBot) {
-        document.getElementById('ai-suggestion-text').textContent = `Last Move: ${classification}`;
-      }
-    }
-
-    function updateEvalBar() {
-      const fen = game.fen();
-      let score = 0;
-      for (let char of fen.split(' ')[0]) {
-        if (char === 'P') score += 1;
-        if (char === 'p') score -= 1;
-        if (char === 'N' || char === 'B') score += 3;
-        if (char === 'n' || char === 'b') score -= 3;
-        if (char === 'R') score += 5;
-        if (char === 'r') score -= 5;
-        if (char === 'Q') score += 9;
-        if (char === 'q') score -= 9;
-      }
-      document.getElementById('eval-score').textContent = (score >= 0 ? '+' : '') + score.toFixed(1);
-      let whitePercent = Math.min(95, Math.max(5, 50 + score * 5));
-      document.getElementById('eval-bar-white').style.width = whitePercent + '%';
-      document.getElementById('eval-bar-black').style.width = (100 - whitePercent) + '%';
-    }
-
-    function appendMoveHistory(move) {
-      const list = document.getElementById('move-history-list');
+    function logMove(sr, sc, tr, tc, player) {
+      const files = ['a','b','c','d','e','f','g','h'];
+      const fromSquare = `${files[sc]}${8-sr}`;
+      const toSquare = `${files[tc]}${8-tr}`;
+      
+      const history = document.getElementById('move-history');
       const div = document.createElement('div');
-      div.className = "flex justify-between px-2 py-1 rounded bg-white/5";
-      div.innerHTML = `<span>${move.color === 'w' ? 'White' : 'Black'}: <b>${move.san}</b></span>`;
-      list.appendChild(div);
-      list.scrollTop = list.scrollHeight;
+      div.className = "px-2 py-1 rounded bg-white/5 flex justify-between";
+      div.innerHTML = `<span>${player}:</span> <b>${fromSquare} ➔ ${toSquare}</b>`;
+      history.appendChild(div);
+      history.scrollTop = history.scrollHeight;
     }
 
-    function requestAiHint() {
-      const moves = game.moves({ verbose: true });
-      if (moves.length === 0) return;
-      const hint = moves[0];
-      const el = document.querySelector(`[data-square="${hint.to}"]`);
-      if (el) {
-        el.style.border = "4px solid #38bdf8";
-        setTimeout(() => el.style.border = "", 2000);
-      }
-      document.getElementById('ai-suggestion-text').textContent = `AI Hint: Play ${hint.from} to ${hint.to}`;
+    function startClocks() {
+      clearInterval(matchTimerInterval);
+      matchTimerInterval = setInterval(() => {
+        if (!gameActive) return;
+        if (turn === 'w') {
+          playerSeconds = Math.max(0, playerSeconds - 1);
+          document.getElementById('player-clock').textContent = formatTime(playerSeconds);
+          if (playerSeconds === 0) endGame("Time out! Bot wins.");
+        } else {
+          oppSeconds = Math.max(0, oppSeconds - 1);
+          document.getElementById('opp-clock').textContent = formatTime(oppSeconds);
+          if (oppSeconds === 0) endGame("Time out! You win!");
+        }
+      }, 1000);
+    }
+
+    function formatTime(sec) {
+      let m = Math.floor(sec / 60).toString().padStart(2, '0');
+      let s = (sec % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
     }
 
     function resignGame() {
-      endGame("You resigned. Bot wins.");
+      endGame("You resigned. Match ended.");
     }
 
-    function endGame(msg) {
-      clearInterval(gameTimer);
-      document.getElementById('game-view').classList.add('hidden');
-      document.getElementById('post-game-view').classList.remove('hidden');
-      document.getElementById('review-result-title').textContent = msg;
-
-      // Render chart
-      const ctx = document.getElementById('evalChart').getContext('2d');
-      if (evalChartInstance) evalChartInstance.destroy();
-      evalChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: moveClassifications.map((_, i) => `#${i+1}`),
-          datasets: [{
-            label: 'Evaluation Curve',
-            data: moveClassifications.map(() => (Math.random() * 4 - 2).toFixed(1)),
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            fill: true,
-            tension: 0.3
-          }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-      });
-    }
-
-    // Daily Puzzles
-    let puzzleGame = new Chess('r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3');
-    let puzzleSelected = null;
-
-    function renderPuzzleBoard() {
-      const boardEl = document.getElementById('puzzle-board');
-      boardEl.innerHTML = '';
-      const boardState = puzzleGame.board();
-
-      for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-          const sqId = String.fromCharCode(97 + c) + (8 - r);
-          const squareDiv = document.createElement('div');
-          const isLight = (r + c) % 2 === 0;
-          squareDiv.className = `square ${isLight ? 'light-wood' : 'dark-wood'}`;
-          squareDiv.dataset.square = sqId;
-
-          const piece = boardState[r][c];
-          if (piece) squareDiv.textContent = pieceSymbols[piece.color === 'w' ? piece.type.toUpperCase() : piece.type];
-          if (puzzleSelected === sqId) squareDiv.classList.add('selected');
-
-          squareDiv.addEventListener('click', () => {
-            if (!puzzleSelected) {
-              if (piece && piece.color === 'w') { puzzleSelected = sqId; renderPuzzleBoard(); }
-            } else {
-              const move = puzzleGame.move({ from: puzzleSelected, to: sqId, promotion: 'q' });
-              puzzleSelected = null;
-              if (move) {
-                renderPuzzleBoard();
-                document.getElementById('puzzle-status').textContent = "Correct move! Puzzle solved! 🎉";
-                userProfile.puzzlesSolved++;
-              } else {
-                renderPuzzleBoard();
-              }
-            }
-          });
-          boardEl.appendChild(squareDiv);
-        }
-      }
-    }
-
-    function resetPuzzle() {
-      puzzleGame = new Chess('r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3');
-      puzzleSelected = null;
-      renderPuzzleBoard();
-      document.getElementById('puzzle-status').textContent = "White to move. Find the brilliant tactical strike!";
-    }
-
-    function nextPuzzle() {
-      resetPuzzle();
-    }
-
-    // Spectate Board
-    let specGame = new Chess();
-    function renderSpectateBoard() {
-      const boardEl = document.getElementById('spectate-board');
-      boardEl.innerHTML = '';
-      const boardState = specGame.board();
-
-      for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-          const squareDiv = document.createElement('div');
-          const isLight = (r + c) % 2 === 0;
-          squareDiv.className = `square ${isLight ? 'light-wood' : 'dark-wood'}`;
-          const piece = boardState[r][c];
-          if (piece) squareDiv.textContent = pieceSymbols[piece.color === 'w' ? piece.type.toUpperCase() : piece.type];
-          boardEl.appendChild(squareDiv);
-        }
-      }
-    }
-
-    setInterval(() => {
-      if (!specGame.game_over() && document.getElementById('tab-spectate').classList.contains('hidden') === false) {
-        const moves = specGame.moves({ verbose: true });
-        if (moves.length > 0) {
-          specGame.move(moves[Math.floor(Math.random() * moves.length)]);
-          renderSpectateBoard();
-        } else {
-          specGame.reset();
-        }
-      }
-    }, 3000);
-
-    function sendChatMessage() {
-      const input = document.getElementById('chat-input');
-      const val = input.value.trim();
-      if (!val) return;
-      const chatList = document.getElementById('chat-messages');
-      const div = document.createElement('div');
-      div.className = "p-2 rounded-lg bg-white/5";
-      div.innerHTML = `<span class="text-emerald-400 font-bold">${userProfile.name}:</span> ${val}`;
-      chatList.appendChild(div);
-      chatList.scrollTop = chatList.scrollHeight;
-      input.value = '';
+    function endGame(message) {
+      gameActive = false;
+      clearInterval(matchTimerInterval);
+      alert(message);
+      switchTab('dashboard');
     }
   </script>
 </body>
