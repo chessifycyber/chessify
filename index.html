@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chessify - Interactive Chess Platform</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Official Chess Engine -->
+  <!-- Official Rules Engine -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -13,25 +13,25 @@
     .glass-panel { background: rgba(17, 24, 39, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
     .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.06); }
     
-    /* Perfect Square Board Setup */
+    /* Board Styling */
     .chess-board { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); aspect-ratio: 1 / 1; width: 100%; max-width: 500px; }
-    .square { position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; }
+    .square { position: relative; display: flex; items-center; justify-content: center; cursor: pointer; user-select: none; }
     .square.light-wood { background: #eeeed2; }
     .square.dark-wood { background: #769656; }
     .square.selected { background: #baca44 !important; }
-    .square.highlight::after { content: ''; position: absolute; width: 24%; height: 24%; background: rgba(20, 85, 30, 0.6); border-radius: 50%; }
-    .piece-img { width: 88%; height: 88%; object-fit: contain; pointer-events: none; }
+    .square.highlight::after { content: ''; position: absolute; width: 26%; height: 26%; background: rgba(20, 85, 30, 0.6); border-radius: 50%; }
+    .piece-svg { width: 85%; height: 85%; pointer-events: none; filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.3)); }
   </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
 
-  <!-- ONBOARDING MODAL -->
+  <!-- LOGIN MODAL -->
   <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
     <div class="glass-panel w-full max-w-md p-8 rounded-3xl shadow-2xl border border-white/10">
       <div class="text-center mb-6">
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 text-white font-black text-2xl shadow-lg shadow-emerald-500/30 mb-3">♟️</div>
         <h1 class="text-3xl font-extrabold text-white tracking-tight">Chessify</h1>
-        <p class="text-gray-400 text-sm mt-1">Smart Engine & Interactive Gameplay</p>
+        <p class="text-gray-400 text-sm mt-1">Standalone Engine & High-Res Graphics</p>
       </div>
 
       <div class="space-y-4">
@@ -47,13 +47,13 @@
     </div>
   </div>
 
-  <!-- GAME OVER CUSTOM MODAL (NO ALERT CRASHES) -->
-  <div id="gameover-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in">
+  <!-- GAME OVER MODAL -->
+  <div id="gameover-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
     <div class="glass-panel w-full max-w-sm p-8 rounded-3xl shadow-2xl border border-white/10 text-center space-y-5">
       <div class="text-5xl" id="gameover-icon">🏆</div>
       <div>
         <h2 class="text-2xl font-extrabold text-white" id="gameover-title">Victory!</h2>
-        <p class="text-xs text-gray-400 mt-1" id="gameover-desc">You won by Checkmate</p>
+        <p class="text-xs text-gray-400 mt-1" id="gameover-desc">Match finished</p>
       </div>
 
       <div class="glass-card p-4 rounded-2xl flex justify-around items-center">
@@ -68,13 +68,11 @@
         </div>
       </div>
 
-      <div class="flex space-x-3">
-        <button onclick="closeGameOverModal()" class="w-full py-3 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition-all">Play Again</button>
-      </div>
+      <button onclick="closeGameOverModal()" class="w-full py-3 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition-all">Play Again</button>
     </div>
   </div>
 
-  <!-- MAIN APP CONTAINER -->
+  <!-- MAIN APP -->
   <div id="main-app" class="hidden flex-col min-h-screen">
     <header class="glass-panel border-b border-white/10 sticky top-0 z-40 px-6 py-3 flex items-center justify-between">
       <div class="flex items-center space-x-6">
@@ -212,19 +210,21 @@
     let matchTimerInterval = null;
     let playerSeconds = 600, oppSeconds = 600;
 
-    const pieceSVGs = {
-      p: 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg',
-      r: 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
-      n: 'https://upload.wikimedia.org/wikipedia/commons/ef/ef/Chess_ndt45.svg',
-      b: 'https://upload.wikimedia.org/wikipedia/commons/9/9b/Chess_bdt45.svg',
-      q: 'https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg',
-      k: 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg',
-      P: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg',
-      R: 'https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg',
-      N: 'https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg',
-      B: 'https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg',
-      Q: 'https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg',
-      K: 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg'
+    // Vector SVG Piece Path Definitions (Built-in, zero external dependencies)
+    const pieceSvgPaths = {
+      p: '<svg viewBox="0 0 45 45" class="piece-svg"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 18.59 16 21c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-2.41-1.33-4.5-3.28-5.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z" fill="#1e293b" stroke="#000" stroke-width="1.5"/></svg>',
+      r: '<svg viewBox="0 0 45 45" class="piece-svg"><path d="M9 39h27v-3H9v3zm3-3h21v-4H12v4zm1-4h19l-1.5-10h-16L13 32zm.5-11h18l1.5-5H12l1.5 5zM11 15h23v-2H11v2zm1-3h21V9H12v3z" fill="#1e293b" stroke="#000" stroke-width="1.5"/></svg>',
+      n: '<svg viewBox="0 0 45 45" class="piece-svg"><path d="M22 10c-3.5 0-8 3-8 8 0 4 2 6 3 8-2.5 1-6 2.5-6 7 0 3 3 6 11 6s11-3 11-6c0-4.5-3.5-6-6-7 1-2 3-4 3-8 0-5-4.5-8-8-8z" fill="#1e293b" stroke="#000" stroke-width="1.5"/></svg>',
+      b: '<svg viewBox="0 0 45 45" class="piece-svg"><path d="M22.5 8c-3 0-5.5 2.5-5.5 5.5 0 2 1 3.5 2.5 4.5-2 2-3.5 5-3.5 8 0 4.5 3.5 8 6.5 11 3-3 6.5-6.5 6.5-11 0-3-1.5-6-3.5-8 1.5-1 2.5-2.5 2.5-4.5 0-3-2.5-5.5-5.5-5.5z" fill="#1e293b" stroke="#000" stroke-width="1.5"/></svg>',
+      q: '<svg viewBox="0 0 45 45" class="piece-svg"><path d="M9 26c0 2 1.5 3 3.5 3s3.5-1 3.5-3-1.5-3-3.5-3S9 24 9 26zm27 0c0 2-1.5 3-3.5 3S29 28 29 26s1.5-3 3.5-3 3.5 1 3.5 3zM22.5 10c-2.5 0-4.5 2-4.5 4.5s2 4.5 4.5 4.5 4.5-2 4.5-4.5-2-4.5-4.5-4.5zM12 38h21v-3H12v3z" fill="#1e293b" stroke="#000" stroke-width="1.5"/></svg>',
+      k: '<svg viewBox="0 0 45 45" class="piece-svg"><path d="M22.5 6v4m-2-2h4m-2 4c-3 0-6 2.5-6 6 0 3 2 5 3.5 6.5-2 1.5-4 4-4 7.5 0 4 3.5 7 8.5 7s8.5-3 8.5-7c0-3.5-2-6-4-7.5 1.5-1.5 3.5-3.5 3.5-6.5 0-3.5-3-6-6-6z" fill="#1e293b" stroke="#000" stroke-width="1.5"/></svg>',
+      
+      P: '<svg viewBox="0 0 45 45" class="piece-svg"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 18.59 16 21c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-2.41-1.33-4.5-3.28-5.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z" fill="#ffffff" stroke="#000" stroke-width="1.5"/></svg>',
+      R: '<svg viewBox="0 0 45 45" class="piece-svg"><path d="M9 39h27v-3H9v3zm3-3h21v-4H12v4zm1-4h19l-1.5-10h-16L13 32zm.5-11h18l1.5-5H12l1.5 5zM11 15h23v-2H11v2zm1-3h21V9H12v3z" fill="#ffffff" stroke="#000" stroke-width="1.5"/></svg>',
+      N: '<svg viewBox="0 0 45 45" class="piece-svg"><path d="M22 10c-3.5 0-8 3-8 8 0 4 2 6 3 8-2.5 1-6 2.5-6 7 0 3 3 6 11 6s11-3 11-6c0-4.5-3.5-6-6-7 1-2 3-4 3-8 0-5-4.5-8-8-8z" fill="#ffffff" stroke="#000" stroke-width="1.5"/></svg>',
+      B: '<svg viewBox="0 0 45 45" class="piece-svg"><path d="M22.5 8c-3 0-5.5 2.5-5.5 5.5 0 2 1 3.5 2.5 4.5-2 2-3.5 5-3.5 8 0 4.5 3.5 8 6.5 11 3-3 6.5-6.5 6.5-11 0-3-1.5-6-3.5-8 1.5-1 2.5-2.5 2.5-4.5 0-3-2.5-5.5-5.5-5.5z" fill="#ffffff" stroke="#000" stroke-width="1.5"/></svg>',
+      Q: '<svg viewBox="0 0 45 45" class="piece-svg"><path d="M9 26c0 2 1.5 3 3.5 3s3.5-1 3.5-3-1.5-3-3.5-3S9 24 9 26zm27 0c0 2-1.5 3-3.5 3S29 28 29 26s1.5-3 3.5-3 3.5 1 3.5 3zM22.5 10c-2.5 0-4.5 2-4.5 4.5s2 4.5 4.5 4.5 4.5-2 4.5-4.5-2-4.5-4.5-4.5zM12 38h21v-3H12v3z" fill="#ffffff" stroke="#000" stroke-width="1.5"/></svg>',
+      K: '<svg viewBox="0 0 45 45" class="piece-svg"><path d="M22.5 6v4m-2-2h4m-2 4c-3 0-6 2.5-6 6 0 3 2 5 3.5 6.5-2 1.5-4 4-4 7.5 0 4 3.5 7 8.5 7s8.5-3 8.5-7c0-3.5-2-6-4-7.5 1.5-1.5 3.5-3.5 3.5-6.5 0-3.5-3-6-6-6z" fill="#ffffff" stroke="#000" stroke-width="1.5"/></svg>'
     };
 
     const pieceValues = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
@@ -330,10 +330,7 @@
           const p = state[r][c];
           if (p) {
             const pieceKey = p.color === 'w' ? p.type.toUpperCase() : p.type;
-            const img = document.createElement('img');
-            img.src = pieceSVGs[pieceKey];
-            img.className = 'piece-img';
-            squareDiv.appendChild(img);
+            squareDiv.innerHTML = pieceSvgPaths[pieceKey] || '';
           }
 
           if (selectedSquare === sqId) squareDiv.classList.add('selected');
@@ -381,7 +378,7 @@
       }
     }
 
-    // Smart Bot Engine (Moves all pieces & evaluates captures/tactics)
+    // Smart Tactical Bot Engine
     function makeSmartBotMove() {
       if (!game || game.game_over()) return;
 
@@ -391,14 +388,14 @@
       let bestMove = null;
       let highestScore = -999;
 
-      // Evaluate and pick tactical moves across ALL pieces
       moves.forEach(m => {
         let score = 0;
         if (m.captured) score += (pieceValues[m.captured] || 1) * 10;
-        if (m.san.includes('+')) score += 5; // Checks
-        if (m.piece === 'n' || m.piece === 'b') score += 2; // Develop pieces
+        if (m.san.includes('+')) score += 5;
+        if (m.piece === 'n' || m.piece === 'b') score += 3;
+        if (m.piece === 'q' || m.piece === 'r') score += 2;
 
-        score += Math.random() * 2; // Dynamic variation
+        score += Math.random() * 3;
 
         if (score > highestScore) {
           highestScore = score;
@@ -417,7 +414,7 @@
 
     function checkGameOver() {
       if (game.in_checkmate()) {
-        const isWin = game.turn() === 'b'; // White won if Black is in turn
+        const isWin = game.turn() === 'b';
         triggerGameOverModal(isWin, "Checkmate!", isWin ? "You delivered checkmate!" : "Opponent checkmated you.");
         return true;
       } else if (game.in_draw() || game.in_stalemate() || game.in_threefold_repetition()) {
