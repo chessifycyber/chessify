@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chessify - Official Rules Engine</title>
+  <title>Chessify - Interactive Chess Platform</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Official Chess Logic Engine -->
+  <!-- Official Chess Engine -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -13,13 +13,13 @@
     .glass-panel { background: rgba(17, 24, 39, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
     .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.06); }
     
-    /* Strict Square Board Layout */
+    /* Perfect Square Board Setup */
     .chess-board { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); aspect-ratio: 1 / 1; width: 100%; max-width: 500px; }
     .square { position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; }
     .square.light-wood { background: #eeeed2; }
     .square.dark-wood { background: #769656; }
     .square.selected { background: #baca44 !important; }
-    .square.highlight::after { content: ''; position: absolute; width: 20%; height: 20%; background: rgba(20, 85, 30, 0.5); border-radius: 50%; }
+    .square.highlight::after { content: ''; position: absolute; width: 24%; height: 24%; background: rgba(20, 85, 30, 0.6); border-radius: 50%; }
     .piece-img { width: 88%; height: 88%; object-fit: contain; pointer-events: none; }
   </style>
 </head>
@@ -31,7 +31,7 @@
       <div class="text-center mb-6">
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 text-white font-black text-2xl shadow-lg shadow-emerald-500/30 mb-3">♟️</div>
         <h1 class="text-3xl font-extrabold text-white tracking-tight">Chessify</h1>
-        <p class="text-gray-400 text-sm mt-1">Real-time chess engine with standard rules</p>
+        <p class="text-gray-400 text-sm mt-1">Smart Engine & Interactive Gameplay</p>
       </div>
 
       <div class="space-y-4">
@@ -43,6 +43,33 @@
         <button onclick="completeLogin()" class="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-bold shadow-lg shadow-emerald-600/30 hover:opacity-95 transition-all">
           Enter Arena 🚀
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME OVER CUSTOM MODAL (NO ALERT CRASHES) -->
+  <div id="gameover-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in">
+    <div class="glass-panel w-full max-w-sm p-8 rounded-3xl shadow-2xl border border-white/10 text-center space-y-5">
+      <div class="text-5xl" id="gameover-icon">🏆</div>
+      <div>
+        <h2 class="text-2xl font-extrabold text-white" id="gameover-title">Victory!</h2>
+        <p class="text-xs text-gray-400 mt-1" id="gameover-desc">You won by Checkmate</p>
+      </div>
+
+      <div class="glass-card p-4 rounded-2xl flex justify-around items-center">
+        <div>
+          <div class="text-[10px] text-gray-400 uppercase font-semibold">Elo Change</div>
+          <div class="text-lg font-black text-emerald-400" id="gameover-elo">+15 Elo</div>
+        </div>
+        <div class="w-px h-8 bg-white/10"></div>
+        <div>
+          <div class="text-[10px] text-gray-400 uppercase font-semibold">New Elo</div>
+          <div class="text-lg font-black text-white" id="gameover-newelo">415</div>
+        </div>
+      </div>
+
+      <div class="flex space-x-3">
+        <button onclick="closeGameOverModal()" class="w-full py-3 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 transition-all">Play Again</button>
       </div>
     </div>
   </div>
@@ -94,11 +121,11 @@
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h2 class="text-lg font-bold text-white">Matchmaking Settings</h2>
-              <p class="text-sm text-gray-300">Select mode and match timer.</p>
+              <p class="text-sm text-gray-300">Choose your opponent and match length.</p>
             </div>
             <div class="flex items-center space-x-2 bg-gray-900/80 p-1.5 rounded-xl border border-white/10">
               <button id="mode-human" onclick="setOpponentMode('human')" class="px-4 py-2 rounded-lg text-xs font-bold bg-emerald-500 text-white">👤 Human Player</button>
-              <button id="mode-bot" onclick="setOpponentMode('bot')" class="px-4 py-2 rounded-lg text-xs font-bold text-gray-400 hover:text-white">🤖 Bot Practice</button>
+              <button id="mode-bot" onclick="setOpponentMode('bot')" class="px-4 py-2 rounded-lg text-xs font-bold text-gray-400 hover:text-white">🤖 Smart Bot</button>
             </div>
           </div>
 
@@ -135,7 +162,7 @@
             <div class="w-full max-w-[500px] flex items-center justify-between glass-panel p-3 rounded-xl">
               <div class="flex items-center space-x-3">
                 <div class="w-8 h-8 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center font-bold" id="opp-avatar">🤖</div>
-                <div class="font-bold text-white text-sm" id="opp-name">Stockfish Bot</div>
+                <div class="font-bold text-white text-sm" id="opp-name">Smart Bot</div>
               </div>
               <div class="px-3 py-1 rounded bg-black/40 font-mono font-bold text-red-400" id="opp-clock">10:00</div>
             </div>
@@ -199,6 +226,8 @@
       Q: 'https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg',
       K: 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg'
     };
+
+    const pieceValues = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
 
     function saveStats() {
       localStorage.setItem('chessify_stats', JSON.stringify(stats));
@@ -272,9 +301,8 @@
       document.getElementById('game-view').classList.remove('hidden');
 
       document.getElementById('opp-avatar').textContent = opponentMode === 'human' ? '👤' : '🤖';
-      document.getElementById('opp-name').textContent = opponentMode === 'human' ? 'Grandmaster_X' : 'Stockfish Bot';
+      document.getElementById('opp-name').textContent = opponentMode === 'human' ? 'Grandmaster_X' : 'Smart Bot';
 
-      // Initialize Official Chess Engine instance
       game = new Chess();
       selectedSquare = null;
       legalMovesForSelected = [];
@@ -308,13 +336,8 @@
             squareDiv.appendChild(img);
           }
 
-          if (selectedSquare === sqId) {
-            squareDiv.classList.add('selected');
-          }
-
-          if (legalMovesForSelected.includes(sqId)) {
-            squareDiv.classList.add('highlight');
-          }
+          if (selectedSquare === sqId) squareDiv.classList.add('selected');
+          if (legalMovesForSelected.includes(sqId)) squareDiv.classList.add('highlight');
 
           squareDiv.onclick = () => handleSquareClick(sqId);
           boardEl.appendChild(squareDiv);
@@ -345,7 +368,7 @@
           if (checkGameOver()) return;
 
           document.getElementById('game-status').textContent = "Opponent thinking...";
-          setTimeout(makeOpponentMove, 600);
+          setTimeout(makeSmartBotMove, 600);
         } else {
           const piece = game.get(sqId);
           if (piece && piece.color === 'w') {
@@ -358,17 +381,34 @@
       }
     }
 
-    function makeOpponentMove() {
+    // Smart Bot Engine (Moves all pieces & evaluates captures/tactics)
+    function makeSmartBotMove() {
       if (!game || game.game_over()) return;
 
-      const possibleMoves = game.moves({ verbose: true });
-      if (possibleMoves.length === 0) return;
+      const moves = game.moves({ verbose: true });
+      if (moves.length === 0) return;
 
-      const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
-      const move = game.move(randomMove);
+      let bestMove = null;
+      let highestScore = -999;
 
+      // Evaluate and pick tactical moves across ALL pieces
+      moves.forEach(m => {
+        let score = 0;
+        if (m.captured) score += (pieceValues[m.captured] || 1) * 10;
+        if (m.san.includes('+')) score += 5; // Checks
+        if (m.piece === 'n' || m.piece === 'b') score += 2; // Develop pieces
+
+        score += Math.random() * 2; // Dynamic variation
+
+        if (score > highestScore) {
+          highestScore = score;
+          bestMove = m;
+        }
+      });
+
+      const move = game.move(bestMove || moves[0]);
       renderBoard();
-      logMove(move, opponentMode === 'human' ? 'Opponent' : 'Bot');
+      logMove(move, opponentMode === 'human' ? 'Opponent' : 'Smart Bot');
 
       if (!checkGameOver()) {
         document.getElementById('game-status').textContent = "Your turn (White)";
@@ -377,11 +417,11 @@
 
     function checkGameOver() {
       if (game.in_checkmate()) {
-        const winner = game.turn() === 'w' ? false : true;
-        endGame(winner, winner ? "CHECKMATE! You won!" : "CHECKMATE! Opponent won!");
+        const isWin = game.turn() === 'b'; // White won if Black is in turn
+        triggerGameOverModal(isWin, "Checkmate!", isWin ? "You delivered checkmate!" : "Opponent checkmated you.");
         return true;
       } else if (game.in_draw() || game.in_stalemate() || game.in_threefold_repetition()) {
-        endGame(false, "Draw / Stalemate!");
+        triggerGameOverModal(false, "Draw!", "Game ended in a draw/stalemate.");
         return true;
       }
       return false;
@@ -403,11 +443,11 @@
         if (game.turn() === 'w') {
           playerSeconds = Math.max(0, playerSeconds - 1);
           document.getElementById('player-clock').textContent = formatTime(playerSeconds);
-          if (playerSeconds === 0) endGame(false, "Time out! Match lost.");
+          if (playerSeconds === 0) triggerGameOverModal(false, "Time Out!", "You ran out of time.");
         } else {
           oppSeconds = Math.max(0, oppSeconds - 1);
           document.getElementById('opp-clock').textContent = formatTime(oppSeconds);
-          if (oppSeconds === 0) endGame(true, "Time out! You won!");
+          if (oppSeconds === 0) triggerGameOverModal(true, "Time Out!", "Opponent ran out of time.");
         }
       }, 1000);
     }
@@ -419,20 +459,33 @@
     }
 
     function resignGame() {
-      endGame(false, "You resigned the match.");
+      triggerGameOverModal(false, "Resigned", "You resigned the match.");
     }
 
-    function endGame(isWin, message) {
+    function triggerGameOverModal(isWin, title, desc) {
       clearInterval(matchTimerInterval);
       stats.games++;
+      let eloChange = isWin ? 15 : -10;
       if (isWin) {
         stats.wins++;
-        stats.elo += 15;
+        stats.elo += eloChange;
       } else {
-        stats.elo = Math.max(100, stats.elo - 10);
+        stats.elo = Math.max(100, stats.elo + eloChange);
       }
       saveStats();
-      alert(message);
+
+      document.getElementById('gameover-icon').textContent = isWin ? "🏆" : "💀";
+      document.getElementById('gameover-title').textContent = title;
+      document.getElementById('gameover-desc').textContent = desc;
+      document.getElementById('gameover-elo').textContent = isWin ? `+${eloChange} Elo` : `${eloChange} Elo`;
+      document.getElementById('gameover-elo').className = isWin ? "text-lg font-black text-emerald-400" : "text-lg font-black text-red-400";
+      document.getElementById('gameover-newelo').textContent = stats.elo;
+
+      document.getElementById('gameover-modal').classList.remove('hidden');
+    }
+
+    function closeGameOverModal() {
+      document.getElementById('gameover-modal').classList.add('hidden');
       switchTab('dashboard');
     }
 
